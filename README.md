@@ -1,69 +1,79 @@
-# Hop-Decorate (HopDec) O4739
+# Hop-Decorate (HopDec)
 
-High throughput molecular dynamics workflow for generating atomistic databases of defect transport in chemically complex materials.
+A high-throughput molecular dynamics workflow for generating atomistic databases of defect transport in chemically complex materials.
+
+---
 
 ## Table of Contents
 
-- [Hop-Decorate (HopDec)](#hop-decorate-hopdec)
-  - [Table of Contents](#table-of-contents)
-  - [Description](#description)
-  - [Installation](#installation)
-    - [Requirements](#requirements)
-  - [Bug Reports and Discussions](#bug-reports-and-discussions)
-  - [Code limitations](#code-limitations)
-  - [License & Copyright](#license--copyright)
+- [Description](#description)
+- [Installation](#installation)
+  - [Requirements](#requirements)
+- [Usage & Functionality](#usage--functionality)
+- [Known Limitations](#known-limitations)
+- [Bug Reports & Community](#bug-reports--community)
+- [License & Copyright](#License)
+
+---
 
 ## Description
 
-The Hop-Decorate code has 2 main functionalities:
+**Hop-Decorate (HopDec)** is a Python-based automation framework for generating and analyzing defect transport processes in disordered or chemically complex materials (CCMs). It enables high-throughput exploration of migration pathways and kinetic barriers by integrating:
 
-1.	Given an atomic configuration representing some material at the atomic scale with some defect present, Hop-Decorate automatically either runs molecular dynamics on that atomic configuration at a user defined temperature in order to discover defect transitions or conducts a Dimer search [1] for a new transition. The energy barrier of the discovered transition is then calculated with an implementation of the Nudged Elastic Band (NEB) method [2]. This searching and NEB calculation process is completed iteratively to generate a database of possible transitions that the defect can make in the material which can be returned to the user.
+- Molecular dynamics and saddle point search methods (e.g., Dimer)
+- Nudged Elastic Band (NEB) energy barrier calculations
+- Automated defect transition discovery
+- Local chemical redecoration for distribution-based kinetic sampling
 
-2.	The other functionality requires the code to know about a defect transition from one stable configuration to another, either as an input by the user or discovered by the previously described routine. Regardless of the source of the transition between atomic configurations, the code calculates how the energy barrier of the transition changes when the atoms are assigned to be different atomic species with concentrations provided by the user. For example, the user may input that they are interested in a 50:50 Cu:Ni ratio alloy. The code would then randomly assign atoms in the atomic configurations as Cu or Ni at a ratio of 50:50 and then recompute the energy barrier of the transition of interest. This would generate a distribution of energy barriers and other statistics which are returned to the user.
+HopDec is particularly useful for generating data-driven surrogate models or inputs for kinetic Monte Carlo simulations in systems where chemical disorder (e.g., alloys or doped oxides) plays a significant role in defect dynamics.
 
-These two functions are used together in the code to automatically generate transitions between defect configurations and calculate the distribution of energy barriers of a given transition and user defined alloy composition.
+---
 
+## Usage & Functionality
 
-[1] Henkelman, Graeme, and Hannes Jónsson. "A dimer method for finding saddle points on high dimensional potential surfaces using only first derivatives." The Journal of chemical physics 111.15 (1999): 7010-7022.
+HopDec provides two core capabilities:
 
-[2] Henkelman, Graeme, Blas P. Uberuaga, and Hannes Jónsson. "A climbing image nudged elastic band method for finding saddle points and minimum energy paths." The Journal of chemical physics 113.22 (2000): 9901-9904.
+### 1. **Transition Discovery**
+Given an atomic configuration containing a defect:
 
+- Runs molecular dynamics at user-defined temperature **or**
+- Performs a Dimer saddle-point search to discover transitions
+- Calculates energy barriers via NEB
+- Builds a database of defect transitions with associated kinetic data
 
-<!-- ## Features
+### 2. **Chemical Redecoration**
+For a known transition (either user-specified or discovered):
 
-List out the key features of your project here. What makes it unique or useful? This can be a bullet-point list or a table. -->
+- Substitutes atomic species according to a specified composition (e.g., 50:50 Cu:Ni)
+- Recalculates energy barriers across multiple random decorations
+- Returns distributions of barriers and associated statistics
+
+These functionalities combine to produce migration graphs where nodes are configurations and edges are statistically sampled transitions — ideal for downstream kMC or machine-learned modeling.
+
+---
 
 ## Installation
 
 ### Requirements
 
-List of third-party python libraries that this code requires to run:
+HopDec depends on the following external tools and Python libraries:
 
-* [LAMMPS](https://www.lammps.org)
-* [numPy](http://www.numpy.org/)
-* [sciPy](http://www.scipy.org/)
-* [matplotlib](http://matplotlib.org/)
-* [networkx](https://networkx.org)
-* [ASE](https://wiki.fysik.dtu.dk/ase/)
-* [pandas](https://pandas.pydata.org)
-* [openMPI](https://www.open-mpi.org)
-* [mpi4py](https://pypi.org/project/mpi4py/)
+- [LAMMPS](https://www.lammps.org)
+- [openMPI](https://www.open-mpi.org)
+- [numpy](https://numpy.org/)
+- [scipy](https://scipy.org/)
+- [matplotlib](https://matplotlib.org/)
+- [networkx](https://networkx.org/)
+- [ASE](https://wiki.fysik.dtu.dk/ase/)
+- [pandas](https://pandas.pydata.org/)
+- [mpi4py](https://mpi4py.readthedocs.io/)
 
-It is recommended that you install these in a conda requirement leverging the requirements.txt file.
-For example, setting up your conda environment will look something like this:
-
-```bash   
-conda create --name my_env  
-conda activate my_env  
-conda install -c conda-forge --file /path/to/requirements.txt  
-```
-This can take some time...
+We recommend using [Conda](https://docs.conda.io/en/latest/) to manage your environment
 
 Some users have reported issues with installing ASE with conda, if you also have problems consider using pip:
 ```bash   
 pip install ase
 ```
-
 
 It is then recommended to add these lines to your .zshrc or .bashrc:  
 ```bash  
@@ -71,17 +81,7 @@ export PATH=$PATH:/path/to/Hop-Decorate/
 export PYTHONPATH=$PYTHONPATH:/path/to/Hop-Decorate/  
 ```
 
-## Bug Reports and Discussions
-
-If you encounter any bugs, have feature requests, or want to discuss anything related to the project, feel free to join the Slack channel [#Hop-Decorate](https://join.slack.com/t/hop-decorate/shared_invite/zt-2e4clgm8w-Hl82df6GMjmLkKm8_hcvcA).
-
-
-## Code limitations
-
-* All structures that you pass to the code need to have [0,0,0] as their origin.
-* All structures must also be cubic
-
-## License & Copyright
+## License
 
 This program underwent formal release process with Los Alamos National Lab 
 with reference number O4739
