@@ -5,3 +5,11 @@ release-notes.md
 examples/loop/
 mains/__pycache__
 tests/unittests/__pycache__
+_HopDec/_version.pyc
+HopDec/_version.pyc
+versioneer.pyc
+*.egg-info/
+build/
+dist/
+*.egg
+MANIFEST
