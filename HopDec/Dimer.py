@@ -23,7 +23,7 @@ class DimerResults:
         self.saddleState = None
         self.newMinimaState = None
 
-class ASE_Dimer(ASE):
+class Dimer(ASE):
     
     """
     Wrapper for the ASE Dimer method.
@@ -189,7 +189,7 @@ def main(initialState : State, params: InputParams, comm, minimizeInput = False,
     DVAtoms = initialState.defectIndices
     
     # Dimer object and run
-    dimer = ASE_Dimer(params, communicator=comm)
+    dimer = Dimer(params, communicator=comm)
     dimerResults.foundSaddle = dimer.run(initialState, DVAtoms)
     
     if dimerResults.foundSaddle:

@@ -15,7 +15,7 @@ from ase.optimize.fire import FIRE as QuasiNewton
 import copy
 import numpy as np
 
-class ASE_NEB(ASE):
+class NEB(ASE):
     
     """
     Class representing the Nudged Elastic Band (NEB) method in the ASE package.
@@ -39,7 +39,7 @@ class ASE_NEB(ASE):
     def __init__(self,params : InputParams , communicator = None):
         
         """
-        Initialize the ASE_NEB class.
+        Initialize the NEB class.
 
         Args:
             params (InputParams): The parameters for the NEB calculation.
@@ -376,7 +376,7 @@ def main(initialState : State, finalState : State, params : InputParams, comm = 
             _,fin,_ = md.main(fin, params, maxMDTime=2, T=10, segmentLength=5,comm=comm)
 
         # NEB object and run
-        neb = ASE_NEB(params, communicator = comm)
+        neb = NEB(params, communicator = comm)
         
         # Embarrasing Hack. Sometimes ASE NEB goes wrong for some reason (?)
         try:
