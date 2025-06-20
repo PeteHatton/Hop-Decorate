@@ -91,8 +91,8 @@ def print_version():
 
     # Import versioneer and get the version number
     import versioneer
-    version = versioneer.get_version()
-    print("HopDec version:", version)
+    version = versioneer.get_version().split('+')[0]
+    print(f"HopDec version: v{version}")
 
 def checkRequirements():
 
