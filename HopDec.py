@@ -5,6 +5,18 @@
 This program was produced under U.S. Government contract 89233218CNA000001 for Los Alamos National Laboratory (LANL), which is operated by Triad National Security, LLC for the U.S. Department of Energy/National Nuclear Security Administration. All rights in the program are reserved by Triad National Security, LLC, and the U.S. Department of Energy/National Nuclear Security Administration. The Government is granted for itself and others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this material to reproduce, prepare. derivative works, distribute copies to the public, perform publicly and display publicly, and to permit others to do so.
 '''
 
+"""
+HopDec: Command-line interface for high-throughput defect migration modeling.
+
+This script allows the user to run different submodules of the HopDec framework, including:
+  - Minimize
+  - NEB
+  - Dimer
+  - Redecorate
+  - HopDec (full workflow)
+
+It supports MPI parallelism and checks for required Python libraries on launch.
+"""
 
 import sys
 import importlib
@@ -45,6 +57,16 @@ requiredLibs = [
 ################################################################################
 
 def usage():
+    
+    """
+    Return a string describing how to use the CLI.
+
+    Returns
+    -------
+    str
+        Formatted help string showing available submodules.
+    """
+        
     availCmdString = ""
     for cmd in sorted(availableCommands.keys()):
         if cmd in commandInfo.keys():
@@ -63,17 +85,22 @@ def usage():
     return usageString
 
 def print_version():
-    """Print the version number."""
+
+    """
+    Print the current HopDec version (using versioneer).
+    """
+
     # Import versioneer and get the version number
     import versioneer
     version = versioneer.get_version()
     print("HopDec version:", version)
 
 def checkRequirements():
+
     """
-    Check required libs are installed
+    Check that all required external libraries are installed and meet version requirements.
+    """
     
-    """
     errors = []
     for lib, libver, minver in requiredLibs:
         try:
@@ -105,6 +132,14 @@ def checkRequirements():
 ################################################################################
 
 def main():
+    
+    """
+    Entry point for the HopDec CLI.
+
+    Launches the appropriate submodule based on command-line input, and
+    runs it with MPI awareness. Performs environment checks and graceful startup.
+    """
+        
     from mpi4py import MPI
 
     comm = MPI.COMM_WORLD
