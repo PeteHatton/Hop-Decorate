@@ -13,3 +13,4 @@ build/
 dist/
 *.egg
 MANIFEST
+__pycache__/
