@@ -2,6 +2,7 @@ from ase.io import read, write
 
 import datetime
 from typing import List
+from HopDec import __version__
 
 def writeTerminalBlock(message : str) -> None:
     
@@ -34,9 +35,9 @@ def writeTerminalBlock(message : str) -> None:
     print('')
 
 def printConsoleHeader():
-    # version=versioneer.get_version()
-    # writeTerminalBlock(f'Hop-Decorate ({version})')
-    writeTerminalBlock(f'Hop-Decorate')
+    def get_clean_version():
+        return __version__.split('+')[0]
+    writeTerminalBlock(f'Hop-Decorate v{get_clean_version()}')
 
 def printConsoleFooter():
     writeTerminalBlock(f'Fin.')

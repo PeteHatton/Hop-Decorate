@@ -21,8 +21,7 @@ It supports MPI parallelism and checks for required Python libraries on launch.
 import sys
 import importlib
 
-from HopDec.Utilities import log, writeTerminalBlock
-
+from HopDec.Utilities import log, writeTerminalBlock, printConsoleHeader
 
 ################################################################################
 
@@ -161,7 +160,7 @@ def main():
         if len(sys.argv) < 2 or sys.argv[1] == "-h" or sys.argv[1] not in availableCommands.keys():
             sys.exit(usage())
         
-        writeTerminalBlock('Hop + Decorate')
+        printConsoleHeader()
 
     comm.barrier()
     _module = importlib.import_module(f".{availableCommands[sys.argv[1]]}", package="HopDec")
