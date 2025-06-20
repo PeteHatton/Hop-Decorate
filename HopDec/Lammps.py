@@ -8,10 +8,21 @@ import random
 import ctypes
 
 class LammpsInterface:
-    """
-    LAMMPS interface object.
 
     """
+    LAMMPS interface class for atomistic simulation workflows.
+
+    Provides high-level operations to run energy minimization, molecular dynamics,
+    and property calculations on atomistic systems using LAMMPS.
+
+    Parameters
+    ----------
+    params : InputParams
+        Simulation parameters containing force field setup and numerical settings.
+    communicator : MPI.Comm, optional
+        MPI communicator for parallel LAMMPS runs (default is None).
+    """
+
     def __init__(self, params, communicator = None):
  
         self._lmp = None
@@ -26,31 +37,17 @@ class LammpsInterface:
     def _initialiseLammps(self, state):
 
         """
-        Initialise the LAMMPS interface.
+        Initializes the LAMMPS instance with the given atomic state.
 
         Parameters
         ----------
-        obj : `State.State`-like object
-            The object that is going to be used with LAMMPS. Must be like the `State.State` object.
-        numAtoms : int
-            The number of atoms.
-        currentPos : `numpy.ndarray`
-            The positions of the atoms.
-        velocity : `numpy.ndarray`, optional
-            If specified then initialise the atoms with the given velocities.
-        screenOutput : `True` or `False`, optional
-            If False (the default) then disable LAMMPS screen output. This will be overriden by the `debug` argument to
-            the initialiser.
-        logOutput : `True` or `False`, optional
-            If False (the default) then disable LAMMPS log file output.
+        state : State
+            A `State` object containing atom types, positions, and cell dimensions.
 
         Raises
         ------
-        LammpsUnitsNotSupported
-            If the value of the lammpsUnits parameter is not supported.
         IOError
-            If the LAMMPS input file cannot be opened.
-
+            If initialization script or data is invalid.
         """
 
         # first close the current instance
@@ -94,16 +91,29 @@ class LammpsInterface:
     def minimize(self, state, initialise = True, etol = None, ftol = None, maxiter = None, dump = False, verbose = True):
 
         """
-        Run a minimisation using LAMMPS on a State in-place
+        Performs energy minimization in-place on the given state using LAMMPS.
 
         Parameters
         ----------
-        state : `State.State`
-            The state object to be minimized.
-        initialise : `True` or `False`, optional
-            If `True` (default) then initialise LAMMPS before running the minimisation. If the state has not been
-            modified since the last time LAMMPS was called then you do not need to initialise.
+        state : State
+            The system state to minimize.
+        initialise : bool, optional
+            Whether to reinitialize LAMMPS with the state (default is True).
+        etol : float, optional
+            Energy tolerance for minimization.
+        ftol : float, optional
+            Force tolerance for minimization.
+        maxiter : int, optional
+            Maximum number of iterations.
+        dump : bool, optional
+            If True, outputs LAMMPS dump files during minimization.
+        verbose : bool, optional
+            If True, prints logging information.
 
+        Returns
+        -------
+        float
+            Maximum atomic displacement during minimization.
         """
 
         if initialise:
@@ -144,9 +154,27 @@ class LammpsInterface:
 
 
     def runMD(self, state, runTime, T = None, dump=None, init = True) -> float:
-        """
-        Run a molecular dynamics simulation.
 
+        """
+        Runs a molecular dynamics (MD) simulation in LAMMPS.
+
+        Parameters
+        ----------
+        state : State
+            The atomic state on which to run MD.
+        runTime : int
+            Number of timesteps to simulate.
+        T : float, optional
+            Temperature for the Langevin thermostat (default from params).
+        dump : bool, optional
+            Whether to dump atomic configurations.
+        init : bool, optional
+            Whether to reinitialize LAMMPS (default is True).
+
+        Returns
+        -------
+        float
+            Maximum atomic displacement during the MD run.
         """
 
         params = self._params
@@ -202,14 +230,19 @@ class LammpsInterface:
         return maxMove
 
     def extractData(self, state) -> float:
+
         """
-        Get data back from LAMMPS and store it.
+        Extracts final atomic positions and energy from LAMMPS and stores in state.
 
         Parameters
         ----------
-        state : `State.State`
-            The `State` object that the LAMMPS data will be stored in.
+        state : State
+            The state object to update with simulation results.
 
+        Returns
+        -------
+        float
+            Maximum atomic displacement since start of simulation.
         """
         
         # update positions in state
@@ -228,13 +261,18 @@ class LammpsInterface:
 
     def calcCentro(self, state):
 
-        # initialse lammps
+        """
+        Computes the centrosymmetry parameter for atoms in the state.
+
+        Parameters
+        ----------
+        state : State
+            The state object to populate with centrosymmetry values.
+        """
+
         self._initialiseLammps(state)
-
         self._lmp.command(f'compute CENTRO all centro/atom {self._params.centroN}')
-
         self._lmp.command('run 0')
-
         state.centroSyms = self._lmp.numpy.extract_compute("CENTRO",1,1)
 
 if __name__ == "__main__":

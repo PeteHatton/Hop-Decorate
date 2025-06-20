@@ -9,31 +9,33 @@ import networkx as nx
 class Model:
         
     """
-    A class representing a Model.
+    A container and manager for state-transition models of defect dynamics in atomistic systems.
 
-    Attributes:
-        params: The parameters for the model.
-        initState: The initial state of the model.
-        stateList: A list containing the state objects.
-        transitionList: A list containing the transition objects.
-        canLabelList: A list of canonical labels.
-        SaddleIndices: A list of saddle indices.
-        SaddleEnergies: A numpy array of saddle energies.
-        Energies: A numpy array of energies.
-        Times: A numpy array of times.
-        KL: The Kullback-Liebler uncertainty.
-        dU_T: A list of dU_T values.
-
+    Attributes
+    ----------
+    params : InputParams
+        Simulation parameters.
+    initState : State or None
+        The initial atomic state of the system.
+    stateList : list of State
+        List of known atomic states.
+    transitionList : list of Transition
+        List of known transitions between states.
+    graph : networkx.Graph
+        Network graph of states and transitions.
+    stateWorkCheck : np.ndarray
+        Flags for whether states require additional simulation work.
     """
 
     def __init__(self, params : InputParams):
         
         """
-        Initialize the Model class.
+        Initialize a new Model instance.
 
-        Args:
-            params: The parameters for the model.
-
+        Parameters
+        ----------
+        params : InputParams
+            Parameters controlling model behavior and constraints.
         """
         
         self.params = params
@@ -48,9 +50,26 @@ class Model:
         
 
     def __len__(self):
+
+        """
+        Return the number of transitions currently in the model.
+
+        Returns
+        -------
+        int
+            Number of transitions.
+        """
+            
         return len(self.transitionList)
     
     def loadRedecorations(self):
+
+        """
+        Load alloy redecoration data (e.g., barrier statistics) for all transitions in the model.
+
+        Populates the `self.redecorations` list with dataframes or `None` if unavailable.
+        """
+
         # TODO: Add logging
         self.redecorations = []
         for trans in self.transitionList:
@@ -63,6 +82,10 @@ class Model:
     
     def buildModelGraph(self):
 
+        """
+        Build a NetworkX graph of the model from the current list of states and transitions.
+        """
+
         edges = [ ( trans.initialState.nonCanLabel, trans.finalState.nonCanLabel ) 
                     for trans in self.transitionList ]
         
@@ -70,10 +93,45 @@ class Model:
 
         self.graph = buildNetwork(nodes, edges)
 
-    def findDepth(self, state):        
+    def findDepth(self, state):
+        """
+        Compute the shortest path depth from the initial state to a given state.
+
+        Parameters
+        ----------
+        state : State
+            The target state.
+
+        Returns
+        -------
+        int or float
+            Shortest path length (in transitions) from `initState` to `state`.
+            Returns np.inf if unreachable.
+        """        
+
         return shortestPath(self.graph, self.initState.nonCanLabel, state.nonCanLabel)
         
     def update(self, workDistribution = [], states = [], transitions = [], connections = []):
+
+        """
+        Update the model by adding new states, transitions, or connection groups.
+
+        Parameters
+        ----------
+        workDistribution : list of State
+            States for which simulation work (e.g., MD) was just performed.
+        states : list of State
+            Newly discovered states to attempt to add.
+        transitions : list of Transition
+            Newly discovered transitions to attempt to add.
+        connections : list of Connection
+            Groups of transitions connecting known and new states.
+
+        Returns
+        -------
+        int
+            1 if at least one new state or transition was added; 0 otherwise.
+        """
 
         def cleanData(data):
             return [ x for x in data if x is not None ]
@@ -174,6 +232,20 @@ class Model:
         return max(foundNewState, foundNewConn, foundNewTrans)
 
     def checkUniqueness(self, obj):
+
+        """
+        Check whether a State or Transition is already known in the model.
+
+        Parameters
+        ----------
+        obj : State or Transition
+            Object to check.
+
+        Returns
+        -------
+        bool
+            True if unique (not in the model), False otherwise.
+        """
         
         if hasattr(obj, 'NAtoms'):
             targetList = self.stateList
@@ -196,6 +268,20 @@ class Model:
                 return 1
     
     def workDistribution(self, size):
+        
+        """
+        Select a list of states weighted by inverse MD time for additional simulation work.
+
+        Parameters
+        ----------
+        size : int
+            Number of states to return.
+
+        Returns
+        -------
+        list of State
+            Sampled states needing further MD exploration.
+        """
 
         inverseTimes = 1 / np.array([ s.time for s in self.stateList ])
         workArray = np.array([ s.doWork for s in self.stateList ])
@@ -204,14 +290,37 @@ class Model:
         return np.random.choice(self.stateList, p = inverseTimes  / inverseTimes .sum(), size = size)
 
 def checkpoint(model, filename = 'model-checkpoint_latest.pkl'):
+    
+    """
+    Save the current model state to a pickle file.
+
+    Parameters
+    ----------
+    model : Model
+        The model object to serialize.
+    filename : str
+        Destination filename.
+    """
+
     with open(filename, 'wb') as f:
         pkl.dump(model, f, protocol=4)
     
 def setupModel(params, comm = None) -> Model:
     
     """
-    Set up the model.
+    Create and initialize a new Model from an input state file.
 
+    Parameters
+    ----------
+    params : InputParams
+        Model configuration parameters.
+    comm : MPI.Comm or None
+        MPI communicator for distributed execution (optional).
+
+    Returns
+    -------
+    Model
+        A fully initialized Model object with its initial state minimized and inserted.
     """
     
     model = Model(params)

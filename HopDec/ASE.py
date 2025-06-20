@@ -8,7 +8,15 @@ from mpi4py import MPI
 class ASE:
 
     """
-        Atomic Simulation Environment (ASE) parent class for NEB and Dimer.
+    Parent class for ASE-based simulations using LAMMPSlib, 
+    supporting defect migration analysis with NEB or Dimer methods.
+
+    Parameters
+    ----------
+    params : InputParams
+        Simulation parameters, including species names, LAMMPS commands, etc.
+    comm : MPI communicator, optional
+        MPI communicator for parallel environments (defaults to None).
     """
 
     def __init__(self, params : InputParams, comm = None):
@@ -34,7 +42,19 @@ class ASE:
         
     def toState(self, aseAtoms : Atoms):
 
-        """function to turn ase atoms object into state object"""
+        """
+        Converts an ASE Atoms object into an internal State object for simulation.
+
+        Parameters
+        ----------
+        aseAtoms : ase.Atoms
+            ASE atomic configuration to be converted.
+
+        Returns
+        -------
+        State
+            A State object with atomic positions, types, and cell dimensions.
+        """
 
         pos = aseAtoms.positions
         NAtoms = len(pos)
