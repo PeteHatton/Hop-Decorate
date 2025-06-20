@@ -15,3 +15,4 @@ dist/
 MANIFEST
 __pycache__/
 .pytest_cache
+mains/__pycache__
