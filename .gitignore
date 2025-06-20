@@ -14,3 +14,4 @@ dist/
 *.egg
 MANIFEST
 __pycache__/
+.pytest_cache
