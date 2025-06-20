@@ -51,6 +51,10 @@ class Redecorate:
         return initialTypeList.tolist(), shuffleList.tolist()
 
     def run(self, initialState: State, finalState: State, comm = None):
+
+        '''
+        TODO: Initialize redecs with pathway from static decoration transition
+        '''
         
         rank = 0
         size = 1
@@ -81,7 +85,7 @@ class Redecorate:
             shuffleListCurrent = copy.deepcopy(shuffleList)
             init = copy.deepcopy(initialState)
             fin = copy.deepcopy(finalState)
-            decoration = copy.deepcopy(initialTypeList)
+            decoration = np.asarray(copy.deepcopy(initialTypeList))
 
             log(__name__, f"rank: {rank}: Redecoration: {n+1}",1)        
 
@@ -90,11 +94,18 @@ class Redecorate:
             random.shuffle(shuffleListCurrent)
             
             # recombine with static types
-            j = 0
-            for i in range(len(decoration)):
-                if decoration[i] == -1:
-                    decoration[i] = shuffleListCurrent[j]
-                    j += 1
+            mask = decoration == -1
+            num_to_replace = np.count_nonzero(mask)
+
+            # Ensure there are enough replacement values
+            if num_to_replace > len(shuffleListCurrent):
+                raise ValueError(
+                    f"Not enough values in shuffleListCurrent: "
+                    f"need {num_to_replace}, but got {len(shuffleListCurrent)}."
+                )
+
+            # Perform the replacement
+            decoration[mask] = shuffleListCurrent[:num_to_replace]
 
             # apply the atom type list to initial and final states.
             init.type = decoration
@@ -118,8 +129,8 @@ class Redecorate:
         if comm:
             comm.barrier()
             connectionList = comm.gather(self.connections, root = 0)
-            if rank == 0:
-                self.connections = [item for sublist in connectionList for item in sublist]
+            if rank == 0: self.connections = [item for sublist in connectionList for item in sublist]
+
         return 0
             
     def toDisk(self, params : InputParams, filename = 'test'):
