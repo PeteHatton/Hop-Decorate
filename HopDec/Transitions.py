@@ -105,7 +105,7 @@ class Transition:
         log(__name__,f"Saving NEB Structure to '{folder}/{subfolder}'")
 
         for i, image in enumerate(self.images):
-            image.writeState(f'{folder}/{subfolder}/{i}.dat')
+            image.write(f'{folder}/{subfolder}/{i}.dat')
             
 
     def printTransitionSummary(self):
@@ -160,7 +160,7 @@ class Transition:
         self.canLabel = graphLabel(graphEdges, types = defectTypes, canonical = 1)
         self.nonCanLabel = graphLabel(graphEdges, indices = defectIndices, canonical = 0)
 
-        # dummyState.writeState(f'state/{self.canLabel}_{self.nonCanLabel}.dat')
+        # dummyState.write(f'state/{self.canLabel}_{self.nonCanLabel}.dat')
 
 class Connection:
 

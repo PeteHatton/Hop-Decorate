@@ -326,7 +326,7 @@ def setupModel(params, comm = None) -> Model:
     model = Model(params)
 
     if params.verbose: log(__name__, f"Reading state file: {params.inputFilename}",0)
-    model.initState = readStateLAMMPSData(params.inputFilename)
+    model.initState = read(params.inputFilename)
 
     Minimize.main(model.initState, params, comm = comm)
     

@@ -2,16 +2,13 @@ import copy
 
 from .Utilities import *
 from .Input import *
-from .State import *
+from . import State
 from .Vectors import *
 from .NEB import *
 
 from ase.optimize import BFGS
 from ase.constraints import FixAtoms
 from ase.dimer import DimerControl, MinModeAtoms, MinModeTranslate
-from ase import Atoms
-
-from .ASE import *
 
 class DimerResults:
 
@@ -155,7 +152,7 @@ def mainCMD(comm):
     progargs = commandLineArgs()
 
     # initial state objects
-    initialState = readStateLAMMPSData(progargs.initialFile)
+    initialState = State.read(progargs.initialFile)
 
     dimerResults = main(initialState, params, comm, minimizeInput = progargs.minimizeInput, pushSaddle = progargs.pushSaddle, writeFile = progargs.outputFile)
 
@@ -217,7 +214,7 @@ def main(initialState : State, params: InputParams, comm, minimizeInput = False,
 
         if writeFile and dimerResults.foundSaddle and pushSaddle:
             log(__name__, f'Writing file to {writeFile}')
-            dimerResults.newMinimaState.writeState(writeFile)
+            dimerResults.newMinimaState.write(writeFile)
     
     return dimerResults
 

@@ -2,16 +2,17 @@
 from .Graphs import *
 from .Input import *
 from .Transitions import *
-from .ASE import *
+from .ASE import ASE
 from .Utilities import *
 from . import Vectors
 from . import Constants
 from . import Atoms
 from .Lammps import LammpsInterface
+from .Atoms import atomicNumber
 
 from ase import Atoms
-from ase.io import read
-from ase.io.lammpsdata import read_lammps_data
+from ase import io
+from ase.io.lammpsdata import read_lammps_data, write_lammps_data
 from scipy.spatial.distance import cdist
 
 import sys
@@ -321,7 +322,7 @@ class State:
         """
         return self.cellDims[0] * self.cellDims[4] * self.cellDims[8]
     
-    def writeState(self, filename : str) -> None:
+    def write(self, filename : str) -> None:
 
         """
         Write a LAMMPS data file containing atomic positions and box dimensions.
@@ -332,8 +333,10 @@ class State:
         Returns:
             None
         """
-
-        writeLAMMPSDataFile(filename, self.NAtoms, self.NSpecies, self.cellDims, self.type, self.pos)
+        params = getParams()
+        atoms = self.toASE(params)
+        write_lammps_data(filename, atoms)
+        # writeLAMMPSDataFile(filename, self.NAtoms, self.NSpecies, self.cellDims, self.type, self.pos)
 
     def toASE(self, params : InputParams) -> Atoms:    
         
@@ -389,99 +392,22 @@ def atomsInSphere(state : State, center : List[float], radius : float):
     x_indices = (indices * 3).tolist()
     
     return x_indices
-    
-    
-def readStateLAMMPSData(filename: str)-> State:
 
-    try:
-        f = open(filename,"r")
-    except:
-        sys.exit(f"{__name__}: ERROR: cannot open file: {filename}")
+def read(filename: str)-> State:
 
-    lines = f.readlines()
-    
-    # pop comment line
-    _ = lines.pop(0)
+    params = getParams()
 
-    # NAtoms line
-    line = lines.pop(0)
-    if line.split()[-1] != 'atoms':
-        sys.exit(f"{__name__}: ERROR: Incorrect file format: line 2 != x atoms")
-    else:
-        state = State(int(line.split()[0]))
+    map = {i + 1: atomicNumber(sym) for i, sym in enumerate(params.specieNames)}
+    ase_data = read_lammps_data(filename, style='atomic', Z_of_type=map)
 
-    # atom type lines
-    line = lines.pop(0)
-    if line.split()[-1] != 'types':
-        sys.exit(f"{__name__}: ERROR: Incorrect file format: line 3 != x atom types")
-    else:
-        state.NSpecies = int(line.split()[0])
-
-    # cell dimensions lines
-    # x
-    line = lines.pop(0)
-    if line.split()[-1] != 'xhi' and line.split()[-2] != 'xlo':
-        sys.exit(f"{__name__}: ERROR: Incorrect file format: line 4 != x x xlo xhi")
-    elif float(line.split()[0]) != 0.0:
-        sys.exit(f"{__name__}: ERROR: Cell must have [0.0,0.0,0.0] as the origin.")
-    else:
-        state.cellDims[0] = float(line.split()[1])
-
-    # y
-    line = lines.pop(0)
-    if line.split()[-1] != 'yhi' and line.split()[-2] != 'ylo':
-        sys.exit(f"{__name__}: ERROR: Incorrect file format: line 5 != y y ylo yhi")
-    elif float(line.split()[0]) != 0.0:
-        sys.exit(f"{__name__}: ERROR: Cell must have [0.0,0.0,0.0] as the origin.")
-    else:
-        state.cellDims[4] = float(line.split()[1])
-
-    # z
-    line = lines.pop(0)
-    if line.split()[-1] != 'zhi' and line.split()[-2] != 'zlo':
-        sys.exit(f"{__name__}: ERROR: Incorrect file format: line 6 != z z zlo zhi")
-    elif float(line.split()[0]) != 0.0:
-        sys.exit(f"{__name__}: ERROR: Cell must have [0.0,0.0,0.0] as the origin.")
-    else:
-        state.cellDims[8] = float(line.split()[1])
-
-    # Atoms ...
-    line = lines.pop(0)
-    line = lines.pop(0)
-    line = lines.pop(0)
-
-    # atom list
-    typ = []
-    pos = []
-    for i in range(state.NAtoms):
-        line = lines.pop(0)
-        
-        cols = len(line.split())
-
-        if cols > 5:
-            sys.exit(f"{__name__}: ERROR: Incorrect file format: ID TYPE X Y Z only")
-        if line.split() == '':
-            sys.exit(f"{__name__}: ERROR: Incorrect file format: Missing atom line")
-
-        t = int(line.split()[1])
-        if t > state.NSpecies:
-            sys.exit(f"{__name__}: ERROR: type {t} > {state.NSpecies} atom types")
-        else:
-            typ.append(t)
-        
-
-        p = [line.split()[2], line.split()[3], line.split()[4]]
-        for po in p:
-            pos.append(float(po))
-    
-    state.pos = np.array(pos)
-    state.type = np.array(typ)
+    ase = ASE(params)
+    state = ase.toState(ase_data)
 
     return state
 
-def readStateLAMMPSDump(filename: str, params : InputParams)-> List[State]:
+def readDump(filename: str, params : InputParams)-> List[State]:
 
-    ase = read(filename, index = ':', format = 'lammps-dump-text')
+    ase = io.read(filename, index = ':', format = 'lammps-dump-text')
     states = []
     
     for i in ase:
@@ -504,6 +430,8 @@ def readStateLAMMPSDump(filename: str, params : InputParams)-> List[State]:
         states.append(state)
 
     return states
+
+    
 
 def asePickleToStateList(params : InputParams, filename : str) -> List[State]:
     """ function to take Matts list of ASE Atoms objects in a pickle and returns a list of States for the a NEB """

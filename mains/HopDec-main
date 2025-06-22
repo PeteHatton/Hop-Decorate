@@ -154,6 +154,6 @@ def main(baseComm):
     MPI.Finalize()
 
 if __name__== "__main__":
-    
+    from mpi4py import MPI
     comm = MPI.COMM_WORLD 
     main(comm)

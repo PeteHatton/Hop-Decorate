@@ -2,7 +2,7 @@ from .Lammps import *
 from .Input import *
 from .Utilities import *
 from .Vectors import *
-from .State import readStateLAMMPSData, getStateCanonicalLabel, State
+from .State import read, getStateCanonicalLabel, State
 
 ################################################################################
 
@@ -57,13 +57,13 @@ def mainCMD(comm):
     params = getParams()
     
     # read lattice and calculate the forces
-    state = readStateLAMMPSData(progargs.inputFile)
+    state = read(progargs.inputFile)
 
     # Minimize
     main(state, params, dump = progargs.dumpMin, verbose = True, comm = comm)
     
     # write relaxed state
-    state.writeState(progargs.outputFile)
+    state.write(progargs.outputFile)
     
     log(__name__, f'Minimized state is stored at: {progargs.outputFile}', 2)
 

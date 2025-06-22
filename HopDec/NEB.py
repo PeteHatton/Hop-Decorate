@@ -1,4 +1,5 @@
 from .State import *
+from . import State
 from .Input import *
 from .ASE import *
 from .Utilities import *
@@ -8,7 +9,7 @@ from .Transitions import *
 from . import MD as md
 from . import Minimize as min
 
-from ase.neb import NEB
+from ase.neb import NEB as aseNEB
 from ase.calculators.lammpslib import LAMMPSlib
 from ase.optimize.fire import FIRE as QuasiNewton
 
@@ -112,7 +113,7 @@ class NEB(ASE):
             log(__name__,f'Interpolating {num_images} images')
         
         # neb with climb = False for stability of path
-        band = NEB(neb_images, climb = False, k = self.params.NEBSpringConstant)
+        band = aseNEB(neb_images, climb = False, k = self.params.NEBSpringConstant)
         band.interpolate(mic=True)
 
         if verbose:
@@ -126,7 +127,7 @@ class NEB(ASE):
 
         # then turn climb on if requested after path is converged
         if self.params.NEBClimbingImage:
-            band = NEB(neb_images, climb = self.params.NEBClimbingImage, k = self.params.NEBSpringConstant)
+            band = aseNEB(neb_images, climb = self.params.NEBClimbingImage, k = self.params.NEBSpringConstant)
             relax = QuasiNewton(band,logfile = logNEB)
             relax.run(fmax = self.params.NEBForceTolerance, 
                       steps = self.params.NEBMaxIterations)
@@ -290,8 +291,8 @@ def mainCMD(comm):
     progargs = commandLineArgs()
 
     # initial state objects
-    initialState = readStateLAMMPSData(progargs.initialFile)
-    finalState = readStateLAMMPSData(progargs.finalFile)
+    initialState = State.read(progargs.initialFile)
+    finalState = State.read(progargs.finalFile)
 
     # run the NEB main function
     connection = main(initialState, finalState, params, comm, plotPathways = progargs.plotPathway, exportStructures = progargs.exportStructures, verbose = True)

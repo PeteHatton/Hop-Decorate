@@ -224,8 +224,8 @@ def mainCMD(comm):
     params = getParams()
 
     # initial state object
-    initialState = readStateLAMMPSData(progargs.initialFile)
-    finalState = readStateLAMMPSData(progargs.finalFile)
+    initialState = read(progargs.initialFile)
+    finalState = read(progargs.finalFile)
 
     transition = Transition(initialState, finalState)
 
