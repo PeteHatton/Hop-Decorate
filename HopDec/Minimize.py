@@ -1,7 +1,6 @@
 from .Lammps import *
-from .Input import *
-from .Utilities import *
-from .Vectors import *
+from .Input import getParams, InputParams
+from .Utilities import log
 from .State import read, getStateCanonicalLabel, State
 
 ################################################################################

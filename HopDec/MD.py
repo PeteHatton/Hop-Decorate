@@ -1,8 +1,7 @@
-from .Lammps import *
-from .State import *    
-from .Input import *
-from .Utilities import *
-from .Vectors import *
+from .Lammps import LammpsInterface
+from .State import State
+from .Input import InputParams
+from .Utilities import log
 from . import Minimize
 
 import copy
