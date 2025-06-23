@@ -1,5 +1,5 @@
 <img src="assets/logo.png" alt="HopDec Logo" width="300"/>
-<br/><br/>
+<br/>
 
 # Hop-Decorate (HopDec)
 
