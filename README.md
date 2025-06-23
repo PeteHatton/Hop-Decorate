@@ -1,3 +1,6 @@
+<img src="logo.png" alt="HopDec Logo" width="300"/>
+<br/><br/>
+
 # Hop-Decorate (HopDec)
 
 A high-throughput molecular dynamics workflow for generating atomistic databases of defect transport in chemically complex materials.
