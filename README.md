@@ -12,8 +12,7 @@ A high-throughput molecular dynamics workflow for generating atomistic databases
 - [Installation](#installation)
   - [Requirements](#requirements)
 - [Usage & Functionality](#usage--functionality)
-- [Known Limitations](#known-limitations)
-- [Bug Reports & Community](#bug-reports--community)
+- [Known Bugs](#known-bugs)
 - [License & Copyright](#License)
 
 ---
@@ -82,6 +81,12 @@ It is then recommended to add these lines to your .zshrc or .bashrc:
 export PATH=$PATH:/path/to/Hop-Decorate/  
 export PYTHONPATH=$PYTHONPATH:/path/to/Hop-Decorate/  
 ```
+
+## Known Bugs
+
+* All structures that you pass to the code need to have [0,0,0] as their origin.
+* All structures must also be cubic.
+* All structures must have consecutive atom IDs
 
 ## License
 
