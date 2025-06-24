@@ -62,7 +62,7 @@ class Dimer(ASE):
         
         e0 = ase_state.get_potential_energy()
 
-        mask = np.ones(state.NAtoms)
+        mask = np.ones(state.NAtoms).astype(bool)
         mask[DVAtoms-1] = 0
         ase_state.set_constraint(FixAtoms(mask=mask))
         defectCOM = state.defectCOM
