@@ -1,5 +1,5 @@
 from . import Atoms
-from . import State
+
 from .Input import *
 
 import ase
@@ -41,6 +41,7 @@ class ASE:
                         )
         
     def toState(self, aseAtoms : Atoms):
+        from . import State
 
         """
         Converts an ASE Atoms object into an internal State object for simulation.
