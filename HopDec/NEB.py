@@ -233,7 +233,7 @@ def _exportForDebug(init,fin,neb,index):
     transition.KRA = neb.KRA
     
     # also store saddle configuration.
-    sad = copy.deepcopy(init)
+    sad = init.copy()
     sad.pos = neb.imagePositions[ neb.saddleNodes[0] ].get_positions().flatten()
     transition.saddleState = sad
 
@@ -542,7 +542,7 @@ def main(initialState : State, finalState : State, params : InputParams, comm = 
             transition.saddleState = sad
 
             for s, struc in enumerate(neb.imagePositions):
-                image = copy.deepcopy(init)
+                image = init.copy()
                 image.pos = struc.get_positions().flatten()
                 image.totalEnergy = neb.pathEnergy[s]
                 transition.images.append(image)

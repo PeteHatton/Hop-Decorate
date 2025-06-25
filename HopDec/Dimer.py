@@ -192,7 +192,7 @@ def main(initialState : State, params: InputParams, comm, minimizeInput = False,
     if dimerResults.foundSaddle:
 
         # save saddle State into dimerResults
-        saddleState = copy.deepcopy(initialState)
+        saddleState = initialState.copy()
         saddleState.pos = dimer.positions.flatten()
 
         dimerResults.saddleState = saddleState
@@ -201,7 +201,7 @@ def main(initialState : State, params: InputParams, comm, minimizeInput = False,
 
             # push structure off of saddle point
             dimer.nudgeAtomOffSaddle()
-            minimaState = copy.deepcopy(initialState)
+            minimaState = initialState.copy()
             minimaState.pos = dimer.positions.flatten()
 
             # minimize

@@ -82,6 +82,52 @@ class State:
         self.KE = np.zeros(self.NAtoms, np.float64)
         self.PE = np.zeros(self.NAtoms, np.float64)
 
+    def copy(self):
+
+        """
+        Return a deep copy of the State object, avoiding deepcopy to prevent
+        issues with C-extensions or non-copyable parts like ASE atoms.
+        """
+
+        import copy
+
+        new_state = State(self.NAtoms)
+
+        # Direct copy of arrays and scalars
+        new_state.cellDims = self.cellDims.copy()
+        new_state.pos = self.pos.copy()
+        new_state.type = self.type.copy()
+        new_state.KE = self.KE.copy()
+        new_state.PE = self.PE.copy()
+
+        new_state.NSpecies = self.NSpecies
+        new_state.totalEnergy = self.totalEnergy
+        new_state.time = self.time
+        new_state.doWork = self.doWork
+        new_state.depth = self.depth
+
+        # Copy of lists (safe shallow copy or deep copy if needed)
+        new_state.centroSyms = self.centroSyms.copy() if self.centroSyms is not None else None
+        new_state.defectCOM = copy.deepcopy(self.defectCOM)
+        new_state.defectIndices = copy.deepcopy(self.defectIndices)
+        new_state.defectPositions = copy.deepcopy(self.defectPositions)
+        new_state.defectTypes = copy.deepcopy(self.defectTypes)
+
+        # Strings and scalars
+        new_state.canLabel = self.canLabel
+        new_state.nonCanLabel = self.nonCanLabel
+        new_state.index = self.index
+
+        # Optional vectors
+        new_state.displacementVector = (
+            self.displacementVector.copy() if self.displacementVector is not None else None
+        )
+        new_state.displacementNVector = (
+            self.displacementNVector.copy() if self.displacementNVector is not None else None
+        )
+
+        return new_state
+
     def getIndicesFromPositions(self, inputPos, maxSep=0.1):
 
         """

@@ -83,8 +83,8 @@ class Redecorate:
         for n in range(startI,endI):
 
             shuffleListCurrent = copy.deepcopy(shuffleList)
-            init = copy.deepcopy(initialState)
-            fin = copy.deepcopy(finalState)
+            init = initialState.copy()
+            fin = finalState.copy()
             decoration = np.asarray(copy.deepcopy(initialTypeList))
 
             log(__name__, f"rank: {rank}: Redecoration: {n+1}",1)        

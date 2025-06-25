@@ -147,7 +147,7 @@ class Transition:
         initialState = self.initialState
         finalState = self.finalState
 
-        dummyState = copy.deepcopy(initialState)
+        dummyState = initialState.copy()
         dummyState.NAtoms = int((len(initialState.defectPositions) + len(finalState.defectPositions)) // 3)
         dummyState.defectPositions = np.concatenate((initialState.defectPositions, finalState.defectPositions))
         dummyState.pos = np.concatenate((initialState.defectPositions, finalState.defectPositions))

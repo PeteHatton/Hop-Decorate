@@ -52,7 +52,7 @@ def main(state : State, params : InputParams, dump = None, comm = None, lmp = No
 
     time = 0
     flag = 0
-    stateTemp = copy.deepcopy(state)
+    stateTemp = state.copy()
     
     segmentLength = segmentLength or params.segmentLength
     T = T or params.MDTemperature
