@@ -110,7 +110,7 @@ class State:
         new_state.centroSyms = self.centroSyms.copy() if self.centroSyms is not None else None
         new_state.defectCOM = copy.deepcopy(self.defectCOM)
         new_state.defectIndices = copy.deepcopy(self.defectIndices)
-        new_state.defectPositions = copy.deepcopy(self.defectPositions)
+        new_state.defectPositions = self.defectPositions.copy() if self.centroSyms is not None else None
         new_state.defectTypes = copy.deepcopy(self.defectTypes)
 
         # Strings and scalars
