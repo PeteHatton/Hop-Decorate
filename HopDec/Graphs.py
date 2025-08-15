@@ -27,7 +27,7 @@ def graphLabel(graphEdges, canonical = 1, types = None, indices = None):
 
     if not canonical:
         if indices is None:
-            ValueError('Non-canonical labeling requires indices to be set.')
+            raise ValueError('Non-canonical labeling requires indices to be set.')
 
         nx.set_node_attributes(G, np.array(indices), "IDs")
         L = nx.algorithms.graph_hashing.weisfeiler_lehman_graph_hash(G, node_attr = "IDs")
