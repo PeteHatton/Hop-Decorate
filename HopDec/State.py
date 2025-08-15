@@ -381,7 +381,8 @@ class State:
         """
         params = getParams()
         atoms = self.toASE(params)
-        write_lammps_data(filename, atoms)
+        
+        write_lammps_data(filename, atoms,specorder=params.specieNames)
         # writeLAMMPSDataFile(filename, self.NAtoms, self.NSpecies, self.cellDims, self.type, self.pos)
 
     def toASE(self, params : InputParams) -> Atoms:    
