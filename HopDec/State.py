@@ -405,7 +405,7 @@ class State:
 
         atoms = Atoms(symbols = atomTypeSymbols, 
                       positions = positions, 
-                      cell = [self.cellDims[0],self.cellDims[4],self.cellDims[8]],
+                      cell = np.array(self.cellDims).reshape(3, 3),
                       pbc = [1,1,1])
 
         return atoms

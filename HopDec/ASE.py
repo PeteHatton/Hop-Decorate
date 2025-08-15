@@ -65,7 +65,7 @@ class ASE:
 
         # add atomic positions to State and cell dimensions
         state.pos = pos.flatten()
-        state.cellDims = [ aseAtoms.cell[0][0], 0, 0, 0, aseAtoms.cell[1][1], 0, 0, 0, aseAtoms.cell[2][2] ]
+        state.cellDims = aseAtoms.cell.array.flatten()
 
         # type assignment to State object format.
         typeSymbols = self.params.specieNames
