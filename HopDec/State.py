@@ -410,35 +410,63 @@ class State:
 
         return atoms
     
-def atomsInSphere(state : State, center : List[float], radius : float):
+# def atomsInSphere(state : State, center : List[float], radius : float):
 
-    '''
-    Return all atoms and their types that are inside a sphere with periodic boundaries.
+#     '''
+#     Return all atoms and their types that are inside a sphere with periodic boundaries.
     
-    state: State object that includes positions of atoms and box size.
-    center: The center of the sphere [x, y, z].
-    radius: The radius of the sphere.
+#     state: State object that includes positions of atoms and box size.
+#     center: The center of the sphere [x, y, z].
+#     radius: The radius of the sphere.
     
-    Returns:
-    - List of indices of atoms inside the sphere.
-    '''
+#     Returns:
+#     - List of indices of atoms inside the sphere.
+#     '''
     
-    positions = np.array(state.pos).reshape(-1, 3)  # Reshape positions to Nx3
-    center = np.array(center)  # Convert center to NumPy array
-    box_size = np.array([ state.cellDims[0], state.cellDims[4], state.cellDims[8]])  # The size of the periodic box (assumed to be a 3D box)
+#     positions = np.array(state.pos).reshape(-1, 3)  # Reshape positions to Nx3
+#     center = np.array(center)  # Convert center to NumPy array
+#     box_size = np.array([ state.cellDims[0], state.cellDims[4], state.cellDims[8]])  # The size of the periodic box (assumed to be a 3D box)
     
-    # Compute minimum distances taking into account periodic boundaries
-    distances = np.linalg.norm(
-        (positions - center) - np.round((positions - center) / box_size) * box_size, axis=1
-    )
+#     # Compute minimum distances taking into account periodic boundaries
+#     distances = np.linalg.norm(
+#         (positions - center) - np.round((positions - center) / box_size) * box_size, axis=1
+#     )
     
-    # Get the indices where the distance is within the radius
-    indices = np.where(distances <= radius)[0]
+#     # Get the indices where the distance is within the radius
+#     indices = np.where(distances <= radius)[0]
     
-    # Convert indices to the x-coordinate indices in the original flat list
-    x_indices = (indices * 3).tolist()
+#     # Convert indices to the x-coordinate indices in the original flat list
+#     x_indices = (indices * 3).tolist()
     
-    return x_indices
+#     return x_indices
+
+def atomsInSphere(state, center, radius):
+    """
+    Return atom *indices* whose minimum-image distance to `center` is <= radius,
+    for a general triclinic cell defined by state.cellDims (length-9, row-major).
+    """
+    pos = np.asarray(state.pos, dtype=float).reshape(-1, 3)   # N×3
+    center = np.asarray(center, dtype=float)
+    H = np.asarray(state.cellDims, dtype=float).reshape(3, 3) # rows: a, b, c
+
+    # Cartesian displacements from center to each atom
+    dr = (pos - center)                     # N×3
+
+    # Convert to fractional in the dual basis: solve H^T * s = dr^T  => s is 3×N
+    s = np.linalg.solve(H.T, dr.T)          # 3×N
+
+    # Wrap to the central image in fractional space
+    s -= np.rint(s)                         # 3×N in [-0.5, 0.5)
+
+    # Back to Cartesian: dr_min^T = H^T * s
+    dr_min = (H.T @ s).T                    # N×3
+
+    # Squared distances & mask
+    d2 = np.einsum('ij,ij->i', dr_min, dr_min)  # N
+    mask = d2 <= (radius * radius + 1e-12)      # small epsilon for edge cases
+
+    indices = np.nonzero(mask)[0]
+    return (indices * 3).tolist()
 
 def read(filename: str)-> State:
 
@@ -463,7 +491,7 @@ def readDump(filename: str, params : InputParams)-> List[State]:
         state = State(NAtoms)
 
         state.pos = i.positions.flatten()
-        state.cellDims = [i.cell[0][0], 0, 0, 0, i.cell[1][1], 0, 0, 0, i.cell[2][2] ]
+        state.cellDims = i.cell.flatten()
     
         typeSymbols = params.specieNames
         types = []
@@ -477,8 +505,6 @@ def readDump(filename: str, params : InputParams)-> List[State]:
         states.append(state)
 
     return states
-
-    
 
 def asePickleToStateList(params : InputParams, filename : str) -> List[State]:
     """ function to take Matts list of ASE Atoms objects in a pickle and returns a list of States for the a NEB """

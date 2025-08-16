@@ -85,7 +85,6 @@ export PYTHONPATH=$PYTHONPATH:/path/to/Hop-Decorate/
 ## Known Bugs
 
 * All structures that you pass to the code need to have [0,0,0] as their origin.
-* All structures must also be cubic.
 * All structures must have consecutive atom IDs
 
 ## License

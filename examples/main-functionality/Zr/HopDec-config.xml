@@ -1,0 +1,140 @@
+<InputParams>
+
+<!--
+===================================
+MAIN SETTINGS
+===================================
+-->
+
+<!-- initial configuration  -->
+<inputFilename>V1.dat</inputFilename>
+<inputDirectory>input/</inputDirectory>
+
+<!-- 0(False)/1(True) for verbose output -->
+<verbose> 1 </verbose>
+
+<!-- controls how much we should grow the model. -1 = no limit, 0 = only run MD in initial state. -->
+<!-- No other values are currently implemented. -->
+<maxModelDepth> 0 </maxModelDepth>
+
+<!-- step intervals of checkpoint files -->
+<checkpointInterval> 100 </checkpointInterval>
+
+<!-- 1 = use canonical labelling for model growth, 0 = opposite -->
+<canonicalLabelling> 0 </canonicalLabelling>
+
+<!-- Discover new transitions? 0 = No, 1 = Yes -->
+<modelSearch> 1 </modelSearch>
+
+<!-- Redecorate discovered transition? 0 = No, 1 = Yes -->
+<!-- Redecoration settings can be found below -->
+<redecorateTransitions> 0 </redecorateTransitions>
+
+<!--
+===================================
+LAMMPS SETTINGS
+===================================
+-->
+
+<!-- Boilerplate lammps script. 
+If working with a charged system use the 'set' command in this block -->
+<LAMMPSInitScript>
+mass 1 91.224
+pair_style eam/fs
+pair_coeff * * input/Zr_3.eam.fs Zr
+</LAMMPSInitScript>
+
+<!-- Number of atomic species in the simulation -->
+<NSpecies>1</NSpecies>
+<!-- Comma seperated list of Specie Names, Order must be the same as in LAMMPSInitScript 
+Must include ALL species -->
+<specieNamesString>Zr</specieNamesString>
+
+<!-- Temperature at which the event discovery is discovered -->
+<MDTemperature>1200.0</MDTemperature>
+<!-- Timestep for MD runs -->
+<MDTimestep>0.001</MDTimestep>
+<!-- MD time per segment (ps) before checking for an event -->
+<segmentLength>2000</segmentLength>
+<!-- Distance (A) an atom moves before triggering event detection -->
+<eventDisplacement>1.5</eventDisplacement>
+
+<!--
+===================================
+DEFECT IDENTIFICATION SETTINGS
+===================================
+-->
+
+<!-- Centrosymmetry N nearest neighbor setting -->
+<centroN>12</centroN>
+<!-- Centrosymmetry cutoff for defect volume identification -->
+<centroCutoff>11</centroCutoff>
+<!-- Maximum distance between two atoms (overestimate slightly) -->
+<bondCutoff>3.50</bondCutoff>
+
+<!--
+===================================
+REDECORATION SETTINGS 
+===================================
+-->
+
+<!-- Species which should NOT be changed when redecorating (can be empty) -->
+<staticSpeciesString>Zr</staticSpeciesString>
+<!-- Species which SHOULD be changed when redecorating -->
+<activeSpeciesString></activeSpeciesString>
+<!-- Comma seperated list of concentrations, Order must be the same as in specieNamesString -->
+<concentrationString>1.0</concentrationString>
+<!-- Number of decorations to do for each transition -->
+<nDecorations> 8 </nDecorations>
+<!-- Integer random seed for the redecoration process. -->
+<!-- WARNING: Redecorations will be identical if this value is unchanged-->
+<randomSeed>1234</randomSeed>
+
+<!--
+===================================
+MINIMIZATION SETTINGS
+===================================
+-->
+
+<!-- Usual LAMMPS Min settings -->
+<minimizationForceTolerance>1e-20</minimizationForceTolerance>
+<minimizationEnergyTolerance>0.0</minimizationEnergyTolerance>
+<minimizationMaxSteps>10000</minimizationMaxSteps>
+<!--  -->
+
+<!-- Minimization will fail if any atom moves more than this distance -->
+<maxMoveMin>2</maxMoveMin>
+
+<!--
+===================================
+NEB SETTINGS 
+===================================
+-->
+
+<!-- break symmetry with a few steps of MD before a NEB simulation is run -->
+<!-- sometimes the neb can be initialized with a highly symmetric linear interpolation
+this can give strange NEB results where two (uncorrelated) atoms move at the same time. 
+If you experience this then turn this setting ON (1)-->
+<breakSym>0</breakSym>
+
+<!-- NEB knots -->
+<NEBNodes> 11 </NEBNodes>
+<NEBClimbingImage> 0 </NEBClimbingImage>
+<!-- NEB spring constant, in [F]/[X] MD units  -->
+<NEBSpringConstant> 0.1 </NEBSpringConstant> 
+<!-- Maximum element of force vector in MD units -->
+<NEBForceTolerance> 0.1 </NEBForceTolerance>
+<!-- Maximum number of force calls -->
+<NEBMaxIterations> 100 </NEBMaxIterations>
+
+<!--
+===================================
+DIMER SETTINGS 
+===================================
+-->
+
+<DIMERForceTol>0.01</DIMERForceTol>
+<DIMERMaxSteps>1000</DIMERMaxSteps>
+<initialDIMERDisplacementDistance>0.1</initialDIMERDisplacementDistance>
+
+</InputParams>

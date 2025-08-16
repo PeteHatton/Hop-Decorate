@@ -59,6 +59,29 @@ class LammpsInterface:
         # self._lmp = lammps(cmdargs=['-screen','none'], comm = self.communicator)
         # self._lmp = lammps()
 
+        # Lammps Box
+        cell = np.array(state.cellDims).reshape(3,3)
+        a = cell[0]
+        b = cell[1]
+        c = cell[2]
+        
+        # LAMMPS parameters
+        lx = np.linalg.norm(a)
+        xy = b[0]
+        xz = c[0]
+        ly = np.sqrt(b[1]**2 + b[2]**2)
+        yz = (b[1]*c[1] + b[2]*c[2]) / b[1] if b[1] != 0 else c[1]
+        lz = np.sqrt(c[2]**2)
+
+        # xlo, xhi
+        xlo, xhi = 0.0, lx
+        # ylo, yhi
+        ylo, yhi = 0.0, ly
+        # zlo, zhi
+        zlo, zhi = 0.0, lz
+
+        # region simBox block 0 {state.cellDims[0]} 0 {state.cellDims[4]} 0 {state.cellDims[8]} units box
+        
         # initialise
         self._lmp.commands_string(f"""clear
             units metal
@@ -67,7 +90,7 @@ class LammpsInterface:
             atom_style {self._params.atomStyle}
             atom_modify sort 0 0 # makes PE's come out in right order
             atom_modify map array
-            region simBox block 0 {state.cellDims[0]} 0 {state.cellDims[4]} 0 {state.cellDims[8]} units box
+            region simBox prism {xlo} {xhi} {ylo} {yhi} {zlo} {zhi} {xy} {xz} {yz} units box
             create_box {self._params.NSpecies} simBox
             """)
         
@@ -83,6 +106,18 @@ class LammpsInterface:
         c_double_array = (ctypes.c_double * len(lmp_positions))
         lmp_c_positions = c_double_array(*lmp_positions)
         self._lmp.scatter_atoms('x', 1, 3, lmp_c_positions)
+
+        # print(f"""clear
+        #     units metal
+        #     dimension 3
+        #     boundary p p p
+        #     atom_style {self._params.atomStyle}
+        #     atom_modify sort 0 0 # makes PE's come out in right order
+        #     atom_modify map array
+        #     region simBox prism {xlo} {xhi} {ylo} {yhi} {zlo} {zhi} {xy} {xz} {yz} units box
+        #     create_box {self._params.NSpecies} simBox
+        #     """)
+        # print(self._params.LAMMPSInitScript)
 
         # run the rest of the boilerplate lammps script
         self._lmp.commands_string(self._params.LAMMPSInitScript)
