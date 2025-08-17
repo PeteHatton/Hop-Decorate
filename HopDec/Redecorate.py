@@ -217,6 +217,8 @@ def commandLineArgs():
 
 def mainCMD(comm):
 
+    from . import State
+
     # get command line arguments
     progargs = commandLineArgs()
 
@@ -224,8 +226,8 @@ def mainCMD(comm):
     params = getParams()
 
     # initial state object
-    initialState = read(progargs.initialFile)
-    finalState = read(progargs.finalFile)
+    initialState = State.read(progargs.initialFile)
+    finalState = State.read(progargs.finalFile)
 
     transition = Transition(initialState, finalState)
 
