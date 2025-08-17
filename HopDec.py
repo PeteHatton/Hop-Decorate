@@ -140,6 +140,7 @@ def main():
     """
         
     from mpi4py import MPI
+    MPI.pickle.THRESHOLD = 0
 
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()

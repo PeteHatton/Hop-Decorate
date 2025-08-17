@@ -14,6 +14,7 @@ def main(baseComm):
     #          This is hard because the ranks own the transitions but not the model...
 
     from mpi4py import MPI
+    MPI.pickle.THRESHOLD = 0
 
     ### Comm Setup ###
     rank = baseComm.Get_rank()
@@ -155,5 +156,6 @@ def main(baseComm):
 
 if __name__== "__main__":
     from mpi4py import MPI
+    MPI.pickle.THRESHOLD = 0
     comm = MPI.COMM_WORLD 
     main(comm)

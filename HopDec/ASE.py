@@ -4,6 +4,7 @@ from .Input import *
 
 import ase
 from mpi4py import MPI
+MPI.pickle.THRESHOLD = 0
 
 class ASE:
 
