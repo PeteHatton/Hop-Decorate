@@ -79,9 +79,6 @@ class State:
         self.displacementNVector = None
         self.index = None
 
-        self.KE = np.zeros(self.NAtoms, np.float64)
-        self.PE = np.zeros(self.NAtoms, np.float64)
-
     def copy(self):
 
         """
@@ -97,8 +94,6 @@ class State:
         new_state.cellDims = self.cellDims.copy()
         new_state.pos = self.pos.copy()
         new_state.type = self.type.copy()
-        new_state.KE = self.KE.copy()
-        new_state.PE = self.PE.copy()
 
         new_state.NSpecies = self.NSpecies
         new_state.totalEnergy = self.totalEnergy

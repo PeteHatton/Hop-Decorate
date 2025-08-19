@@ -123,55 +123,55 @@ class Redecorate:
                 for trans in connection.transitions:
                     trans.images = []
                     trans.saddleState = None
-                
+                connection.redecorationIndex = n + 1
                 self.connections.append(connection)   
-        
+
         if comm:
             comm.barrier()
-            connectionList = comm.gather(self.connections, root = 0)
-            if rank == 0: self.connections = [item for sublist in connectionList for item in sublist]
+            if rank == 0: log('Redecoration',f'Gathering results')
+            rowsLocal = self.rowsFromConnections(self.params)
+            rowsList = comm.gather(rowsLocal, root=0)
+            if rank == 0:
+                allRows = [r for sub in rowsList for r in sub]
+                self.df = pd.DataFrame(allRows)
+        else:
+            self.df = pd.DataFrame(self.rowsFromConnections(self.params))
 
         return 0
-            
-    def toDisk(self, params : InputParams, filename = 'test'):
-        
-        # Prepare an empty list to accumulate rows
+    
+    def rowsFromConnections(self, params: InputParams):
         rows = []
-
-        # Loop through the connections and transitions
-        for d,decoration in enumerate(self.connections):
-            for t,transition in enumerate(decoration.transitions):
-
-                # Create a dictionary for the row data
-                row = {
+        for d, decoration in enumerate(self.connections):
+            for t, transition in enumerate(decoration.transitions):
+                rows.append({
                     'Composition': params.concentrationString,
-                    'Decoration': d + 1,
+                    'Decoration': decoration.redecorationIndex,
                     'Transition': t + 1,
-                    'Initial State': transition.initialState,
-                    'Final State': transition.finalState,
+                    'Initial State Positions': transition.initialState.pos,
+                    'Initial State Types': transition.initialState.type,
+                    'Initial State Cell Dimensions': transition.initialState.cellDims,
+                    'Initial State Canonical Label': transition.initialState.canLabel,
+                    'Initial State non-Canonical Label': transition.initialState.nonCanLabel,
+                    'Initial State Energy': transition.initialState.totalEnergy,
+                    'Final State Positions': transition.finalState.pos,
+                    'Final State Types': transition.finalState.type,
+                    'Final State Cell Dimensions': transition.finalState.cellDims,
+                    'Final State Canonical Label': transition.finalState.canLabel,
+                    'Final State non-Canonical Label': transition.finalState.nonCanLabel,
+                    'Final State Energy': transition.finalState.totalEnergy,
+                    'Transition Canonical Label': transition.canLabel,
+                    'Transition non-Canonical Label': transition.nonCanLabel,
                     'Forward Barrier': transition.forwardBarrier,
                     'Reverse Barrier': transition.reverseBarrier,
                     'KRA': transition.KRA,
                     'dE': transition.dE,
-                    'Init Can Label' : transition.initialState.canLabel,
-                    'Init non-Can Label' : transition.initialState.nonCanLabel,
-                    'Fin Can Label' : transition.finalState.canLabel,
-                    'Fin non-Can Label' : transition.finalState.nonCanLabel,
-                    'Trans Can Label' : transition.canLabel,
-                    'Trans non-Can Label' : transition.nonCanLabel,   
-                    'Initial Energy': transition.initialState.totalEnergy,
-                    'Final Energy': transition.finalState.totalEnergy
-                }
-
-                # Append the row dictionary to the list
-                rows.append(row)
-
-        # Convert the list of rows into a pandas DataFrame at the end
-        df = pd.DataFrame(rows)
-
-        # Pickle the DataFrame
-        with open(f'{filename}', 'wb') as f:
-            pkl.dump(df, f)
+                })
+                
+        return rows
+    
+    def toDisk(self, filename='test'):
+        with open(filename, 'wb') as f:
+            pkl.dump(self.df, f)
             
     def summarize(self):
         """
@@ -219,6 +219,9 @@ def mainCMD(comm):
 
     from . import State
 
+    rank = 0
+    if comm: rank = comm.Get_rank()
+
     # get command line arguments
     progargs = commandLineArgs()
 
@@ -233,7 +236,7 @@ def mainCMD(comm):
 
     filename = main(transition, params , comm = comm)
 
-    log('Redecoration',f'Done. Redecoration results: {filename}')
+    if rank == 0: log('Redecoration',f'Done. Redecoration results: {filename}')
 
 def main(obj, params : InputParams, comm = None):
     
@@ -254,7 +257,7 @@ def main(obj, params : InputParams, comm = None):
         
         filename = f'./{obj.canLabel}_{obj.nonCanLabel}'
         obj.redecoration = filename
-        if rank == 0: Red.toDisk(params, filename = f'{filename}.pkl')
+        if rank == 0: Red.toDisk(filename = f'{filename}.pkl')
 
     else:
         raise TypeError("obj must be an instance of Transition")

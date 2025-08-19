@@ -173,6 +173,7 @@ class Connection:
         self.saddleState = None
         
         self.transitions = []
+        self.redecorationIndex = 0
 
     def __len__(self):
         return len(self.transitions)
