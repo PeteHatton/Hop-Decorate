@@ -9,7 +9,10 @@ from .Transitions import *
 from . import MD as md
 from . import Minimize as min
 
-from ase.neb import NEB as aseNEB
+try:
+    from ase.neb import NEB as aseNEB
+except ImportError:
+    from ase.mep.neb import NEB as aseNEB
 from ase.calculators.lammpslib import LAMMPSlib
 from ase.optimize.fire import FIRE as QuasiNewton
 
@@ -417,7 +420,13 @@ def main(initialState : State, finalState : State, params : InputParams, comm = 
         # HACK: Gets us out of loops of doing the same nebs over and over which happens sometimes...
         seen = 0
         for seenNEBs in completedNEBPos:
-            if maxMoveAtomPos(currentNEBPos[0] , seenNEBs[0], init.cellDims) < 0.1 and maxMoveAtomPos(currentNEBPos[1] , seenNEBs[1], init.cellDims ) < 0.1 and maxMoveAtomPos(currentNEBPos[2] , seenNEBs[2], init.cellDims ) < 0.1:
+            # maxMoveAtomPos returns (max_distance, atom_idx); only compare the distance
+            deltas = [
+                maxMoveAtomPos(currentNEBPos[0], seenNEBs[0], init.cellDims)[0],
+                maxMoveAtomPos(currentNEBPos[1], seenNEBs[1], init.cellDims)[0],
+                maxMoveAtomPos(currentNEBPos[2], seenNEBs[2], init.cellDims)[0],
+            ]
+            if all(delta < 0.1 for delta in deltas):
                 seen = 1
         if seen: 
             if verbose: print('WARNING: Seen this exact NEB before. Skipping...')

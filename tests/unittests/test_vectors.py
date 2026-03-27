@@ -151,8 +151,9 @@ class TestVectors(unittest.TestCase):
         pos2 = [4.0, 5.0, 6.0, 1.0, 2.0, 3.0]
         cellDims = [10.0, 0, 0, 0, 10.0, 0, 0, 0, 10.0]
         
-        max_move = maxMoveAtomPos(pos1, pos2, cellDims)
+        max_move, idx = maxMoveAtomPos(pos1, pos2, cellDims)
         self.assertAlmostEqual(max_move, np.sqrt(27), places=5)
+        self.assertEqual(idx, 0)
     
     def test_COM_periodic(self):
         points = np.array([1.0, 1.0, 1.0, 9.0, 9.0, 9.0])
