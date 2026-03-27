@@ -174,7 +174,7 @@ def maxMoveAtomPos(pos1: list, pos2: list, cellDims: list) -> float:
         dists[i] = distance(pos1[i], pos2[i], H)
 
     idx = int(np.argmax(dists))
-    return dists[idx]
+    return dists[idx], idx
 
 # def COM(points, cellDims):
 #     """

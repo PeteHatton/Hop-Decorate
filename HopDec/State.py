@@ -522,7 +522,10 @@ def getStateCanonicalLabel(state : State, params : InputParams, comm = None, lmp
         lmp = LammpsInterface(params, communicator = comm)
     lmp.calcCentro(state)
 
-    indices = np.where( state.centroSyms > params.centroCutoff)
+    if params.centroCutoff < 0:
+        indices = np.where( state.centroSyms < -params.centroCutoff)
+    else:
+        indices = np.where( state.centroSyms > params.centroCutoff)
     indices = np.array(indices) + 1
     state.defectIndices = indices[0]
 

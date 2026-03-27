@@ -170,7 +170,7 @@ class LammpsInterface:
         if dump:
             dumpFn = "dump*.dat"
             dumpFreq = 1
-            self._lmp.command(f"dump dumpdat all custom {dumpFreq} {dumpFn} id type x y z")
+            self._lmp.command(f"dump dumpdat all custom {dumpFreq} min.dump id type x y z")
 
         self.startPos = np.array(self._lmp.gather_atoms("x", 1, 3))
 
