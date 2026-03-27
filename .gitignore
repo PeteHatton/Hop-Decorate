@@ -1,18 +1,28 @@
-.DS_Store
-HopDec/.DS_Store
-HopDec/__pycache__/
-release-notes.md
-examples/loop/
-mains/__pycache__
-tests/unittests/__pycache__
-_HopDec/_version.pyc
-HopDec/_version.pyc
-versioneer.pyc
+# Python
+__pycache__/
+*.py[cod]
+*.egg
 *.egg-info/
+
+# Distribution / packaging
 build/
 dist/
-*.egg
 MANIFEST
-__pycache__/
+
+# Pickle / checkpoint files (generated outputs)
+*.pkl
+
+# macOS
+.DS_Store
+
+# Pytest
 .pytest_cache
-mains/__pycache__
+
+# Versioneer
+versioneer.pyc
+
+# Release notes (draft)
+release-notes.md
+
+# Example loop outputs
+examples/loop/
