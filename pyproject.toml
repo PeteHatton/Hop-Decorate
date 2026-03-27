@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "HopDec"
+dynamic = ["version"]
+description = "High-throughput defect transition sampling for chemically complex materials"
+readme = "README.md"
+license = { text = "BSD-3-Clause" }
+authors = [{ name = "Peter Hatton", email = "pete.hatton21@gmail.com" }]
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "scipy",
+    "networkx",
+    "pandas",
+    "matplotlib",
+    "ase",
+    "mpi4py",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD Software License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+
+[project.optional-dependencies]
+# LAMMPS Python bindings — install separately if using a pre-built wheel,
+# or build LAMMPS from source with -D BUILD_SHARED_LIBS=ON -D PKG_PYTHON=ON.
+# See https://lammps.sandia.gov/doc/Python_install.html
+lammps = ["lammps"]
+
+[project.scripts]
+hopdec = "HopDec.cli:main"
+
+[project.urls]
+Repository = "https://github.com/PeteHatton/Hop-Decorate"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["HopDec*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "HopDec.__version__" }

@@ -2,7 +2,14 @@
 
 '''
 © 2024. Triad National Security, LLC. All rights reserved.
-This program was produced under U.S. Government contract 89233218CNA000001 for Los Alamos National Laboratory (LANL), which is operated by Triad National Security, LLC for the U.S. Department of Energy/National Nuclear Security Administration. All rights in the program are reserved by Triad National Security, LLC, and the U.S. Department of Energy/National Nuclear Security Administration. The Government is granted for itself and others acting on its behalf a nonexclusive, paid-up, irrevocable worldwide license in this material to reproduce, prepare. derivative works, distribute copies to the public, perform publicly and display publicly, and to permit others to do so.
+This program was produced under U.S. Government contract 89233218CNA000001 for Los Alamos
+National Laboratory (LANL), which is operated by Triad National Security, LLC for the U.S.
+Department of Energy/National Nuclear Security Administration. All rights in the program are
+reserved by Triad National Security, LLC, and the U.S. Department of Energy/National Nuclear
+Security Administration. The Government is granted for itself and others acting on its behalf a
+nonexclusive, paid-up, irrevocable worldwide license in this material to reproduce, prepare
+derivative works, distribute copies to the public, perform publicly and display publicly, and to
+permit others to do so.
 '''
 
 """
@@ -56,7 +63,7 @@ requiredLibs = [
 ################################################################################
 
 def usage():
-    
+
     """
     Return a string describing how to use the CLI.
 
@@ -65,7 +72,7 @@ def usage():
     str
         Formatted help string showing available submodules.
     """
-        
+
     availCmdString = ""
     for cmd in sorted(availableCommands.keys()):
         if cmd in commandInfo.keys():
@@ -74,40 +81,38 @@ def usage():
             availCmdString += f"{cmd}\n     "
 
     usageString = f"""
-    Usage: HopDec.py NAME_OF_MODULE [OPTIONS] [ARGUMENTS]
-         : HopDec.py NAME_OF_MODULE -h will print help"
-                  
+    Usage: hopdec NAME_OF_MODULE [OPTIONS] [ARGUMENTS]
+         : hopdec NAME_OF_MODULE -h will print help"
+
     NAME_OF_MODULE must be one of:
-                      
+
     {availCmdString}"""
-    
+
     return usageString
 
 def print_version():
 
     """
-    Print the current HopDec version (using versioneer).
+    Print the current HopDec version.
     """
 
-    # Import versioneer and get the version number
-    import versioneer
-    version = versioneer.get_version().split('+')[0]
-    print(f"HopDec version: v{version}")
+    from HopDec import __version__
+    print(f"HopDec version: v{__version__}")
 
 def checkRequirements():
 
     """
     Check that all required external libraries are installed and meet version requirements.
     """
-    
+
     errors = []
     for lib, libver, minver in requiredLibs:
         try:
             _module = importlib.import_module(lib)
-        
+
         except ImportError:
             errors.append(f"Could not find required lib: {lib}")
-        
+
         else:
             if libver is not None and minver is not None:
                 getver = getattr(_module, libver, None)
@@ -120,10 +125,10 @@ def checkRequirements():
                     def versionTuple(v):
                         tuple(map(int, v.split(".")))
                     ok = versionTuple(installedver) >= versionTuple(minver)
-                    
+
                     if not ok:
                         errors.append(f"Min version not satisfied for lib: {lib} ({installedver} < {minver})")
-    
+
     if len(errors):
         sys.stderr.write("ERROR: requirements not satisfied (details below):\n\n")
         sys.exit("\n".join(errors) + "\n")
@@ -131,14 +136,14 @@ def checkRequirements():
 ################################################################################
 
 def main():
-    
+
     """
     Entry point for the HopDec CLI.
 
     Launches the appropriate submodule based on command-line input, and
     runs it with MPI awareness. Performs environment checks and graceful startup.
     """
-        
+
     from mpi4py import MPI
     MPI.pickle.THRESHOLD = 0
 
@@ -149,7 +154,7 @@ def main():
     if rank == 0:
 
         checkRequirements()
-        
+
         if len(sys.argv) == 2 and (sys.argv[1] == "-h" or sys.argv[1] == "--help"):
             print(usage())
             sys.exit(0)
@@ -160,7 +165,7 @@ def main():
 
         if len(sys.argv) < 2 or sys.argv[1] == "-h" or sys.argv[1] not in availableCommands.keys():
             sys.exit(usage())
-        
+
         printConsoleHeader()
 
     comm.barrier()
@@ -181,10 +186,10 @@ def main():
     comm.barrier()
     if rank == 0:
         log("HopDec", f"Finishing: {modname}", 0)
-        
+
         writeTerminalBlock('Fin.')
 
-    comm.barrier()        
+    comm.barrier()
     MPI.Finalize()
     sys.exit(0)
 
@@ -192,5 +197,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
