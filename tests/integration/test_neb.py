@@ -55,8 +55,8 @@ class TestNEBCuNi(unittest.TestCase):
             final = read("DV2.dat")
 
             # Minimize both endpoints first
-            from HopDec.Lammps import Lammps
-            lmp = Lammps(params)
+            from HopDec.Lammps import LammpsInterface
+            lmp = LammpsInterface(params)
             lmp.minimize(initial, verbose=False)
             lmp.minimize(final, verbose=False)
 

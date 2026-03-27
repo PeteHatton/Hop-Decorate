@@ -43,11 +43,11 @@ class TestMinimizeZr(unittest.TestCase):
         try:
             from HopDec.State import read
             from HopDec.Input import getParams
-            from HopDec.Lammps import Lammps
+            from HopDec.Lammps import LammpsInterface
 
             cls.params = getParams()
             cls.state = read("V1.dat")
-            lmp = Lammps(cls.params)
+            lmp = LammpsInterface(cls.params)
             cls.max_move = lmp.minimize(cls.state, verbose=False)
         finally:
             os.chdir(original_cwd)
