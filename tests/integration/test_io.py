@@ -11,7 +11,10 @@ import unittest
 
 import numpy as np
 
-from tests.integration.conftest import ZR_DIR, NEB_DIR
+_HERE = os.path.dirname(__file__)
+_REPO_ROOT = os.path.abspath(os.path.join(_HERE, "../.."))
+ZR_DIR = os.path.join(_REPO_ROOT, "examples/main-functionality/Zr")
+NEB_DIR = os.path.join(_REPO_ROOT, "examples/interactive-mode/neb")
 
 
 class TestStateReadZr(unittest.TestCase):

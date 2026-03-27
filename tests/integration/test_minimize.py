@@ -6,12 +6,30 @@ output when run against the Zr vacancy example system.
 """
 
 import os
+import sys
 import unittest
+from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
 
-from tests.integration.conftest import ZR_DIR, skip_no_lammps
+_HERE = os.path.dirname(__file__)
+_REPO_ROOT = os.path.abspath(os.path.join(_HERE, "../.."))
+ZR_DIR = os.path.join(_REPO_ROOT, "examples/main-functionality/Zr")
+
+
+def _real_lammps_available():
+    try:
+        import lammps as _lm
+        return not isinstance(_lm, MagicMock)
+    except ImportError:
+        return False
+
+
+skip_no_lammps = pytest.mark.skipif(
+    not _real_lammps_available(),
+    reason="LAMMPS Python bindings not installed",
+)
 
 
 @skip_no_lammps
