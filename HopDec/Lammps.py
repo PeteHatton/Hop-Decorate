@@ -308,7 +308,7 @@ class LammpsInterface:
         self._initialiseLammps(state)
         self._lmp.command(f'compute CENTRO all centro/atom {self._params.centroN}')
         self._lmp.command('run 0')
-        state.centroSyms = self._lmp.numpy.extract_compute("CENTRO",1,1)
+        state.centroSyms = self._lmp.numpy.extract_compute("CENTRO",1,1).copy()
 
 if __name__ == "__main__":
     pass

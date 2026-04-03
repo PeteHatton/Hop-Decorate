@@ -79,6 +79,30 @@ class State:
         self.displacementNVector = None
         self.index = None
 
+        self.complete = 0.0
+
+    def completeness(self, temperature, A=1e13, barrier=1, to_screen=True):
+
+        from .Constants import boltzmann
+        
+        # total physical time (s)
+        t = self.time * 1e-15
+
+        # slowest possible rate below barrier
+        rate_min = A * np.exp(-barrier / (temperature * boltzmann))
+
+        # probability at least one such event would have occurred
+        p_complete = 1 - np.exp(-rate_min * t)
+
+        if to_screen:
+            print(
+            f"There is a {p_complete * 100:.2f}% probability that all transitions "
+            f"with barriers below {barrier} eV have been observed."
+        )
+        
+        self.complete = p_complete * 100
+        
+
     def copy(self):
 
         """
@@ -105,7 +129,7 @@ class State:
         new_state.centroSyms = self.centroSyms.copy() if self.centroSyms is not None else None
         new_state.defectCOM = copy.deepcopy(self.defectCOM)
         new_state.defectIndices = copy.deepcopy(self.defectIndices)
-        new_state.defectPositions = self.defectPositions.copy() if self.centroSyms is not None else None
+        new_state.defectPositions = self.defectPositions.copy() if self.defectPositions is not None else None
         new_state.defectTypes = copy.deepcopy(self.defectTypes)
 
         # Strings and scalars
