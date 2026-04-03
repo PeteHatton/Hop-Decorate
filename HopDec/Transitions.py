@@ -40,6 +40,18 @@ class Transition:
         self.redecorated = 0
 
     def maxMoveAtom(self):
+
+        """
+        Identify the atom that moved furthest between the initial and final states.
+
+        Returns
+        -------
+        index : int
+            Index of the atom with the largest displacement.
+        type : int
+            Atom type of that atom in the initial state.
+        """
+
         _, index = vec.maxMoveAtom(self.initialState, self.finalState)
         type = self.initialState.type[index]
         return index, type

@@ -99,7 +99,7 @@ Annotated template configs for several material systems are provided in `example
 The main workflow runs under MPI. From a directory containing your `HopDec-config.xml` and input structure:
 
 ```bash
-mpirun -n <N> hopdec
+mpirun -n <N> hopdec HopDec
 ```
 
 Rank 0 owns the transition model and coordinates work; all other ranks run independent LAMMPS instances. A checkpoint file (`model-checkpoint_latest.pkl`) is written every `checkpointInterval` steps so runs can be resumed.
@@ -193,8 +193,8 @@ pytest
 ```
 
 ```
-255 passed, 12 skipped   (without LAMMPS)
-267 passed               (with LAMMPS)
+259 passed, 12 skipped   (without LAMMPS)
+271 passed               (with LAMMPS)
 ```
 
 ---

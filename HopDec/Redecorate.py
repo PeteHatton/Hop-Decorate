@@ -29,6 +29,27 @@ class Redecorate:
 
     def buildShuffleLists(self, state):
 
+        """
+        Build the type lists needed to randomly redecorate a structure.
+
+        Atoms belonging to ``staticSpeciesTypes`` keep their type; all other
+        sites are marked as active and will be reassigned. The method returns
+        a template list (with ``-1`` for active sites) and a pool of atom types
+        to shuffle into those sites according to ``params.concentration``.
+
+        Parameters
+        ----------
+        state : State
+            The reference structure whose atom types define the static skeleton.
+
+        Returns
+        -------
+        initialTypeList : list of int
+            Per-atom type list with ``-1`` wherever a species can be shuffled.
+        shuffleList : list of int
+            Pool of active-species type integers sized to fill all active sites.
+        """
+
         state_type = np.array(state.type)
 
         # Initialize initialTypeList with -1 for types not in staticSpeciesTypes
@@ -140,6 +161,25 @@ class Redecorate:
         return 0
     
     def rowsFromConnections(self, params: InputParams):
+
+        """
+        Flatten stored redecoration results into a list of row dictionaries.
+
+        Each row corresponds to one transition from one redecoration run and
+        contains the barrier data, state positions/types, and labels needed
+        to build the output DataFrame.
+
+        Parameters
+        ----------
+        params : InputParams
+            Simulation parameters (used to record the composition string).
+
+        Returns
+        -------
+        list of dict
+            One dict per transition, ready to be passed to ``pd.DataFrame``.
+        """
+
         rows = []
         for d, decoration in enumerate(self.connections):
             for t, transition in enumerate(decoration.transitions):
