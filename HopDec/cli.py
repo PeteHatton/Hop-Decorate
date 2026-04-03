@@ -123,7 +123,7 @@ def checkRequirements():
                         installedver = getver
 
                     def versionTuple(v):
-                        tuple(map(int, v.split(".")))
+                        return tuple(map(int, v.split(".")))
                     ok = versionTuple(installedver) >= versionTuple(minver)
 
                     if not ok:

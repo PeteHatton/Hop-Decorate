@@ -62,7 +62,7 @@ class InputParams:
         # =====================================================================
         # Parameters for NEB
         self.breakSym = 0
-        self.NEBNNodes = 0
+        self.NEBNodes = 0
         self.NEBClimbingImage = 0
         self.NEBSpringConstant = 0.0
         self.NEBForceTolerance = 0.0
@@ -70,6 +70,8 @@ class InputParams:
         self.NEBMaxIterations = 0
         self.NEBmaxBarrier = np.inf
         self.maxNEBsToDo = np.inf
+        self.intMinBuffer = 0.0
+        self.minBarrier = 0.0
 
         # =====================================================================
         # Parameters for DIMER
