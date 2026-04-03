@@ -45,8 +45,10 @@ class Model:
 
         self.stateList = [] # Contains the state objects
         self.transitionList = [] # Contains the transition Objects
-        self.canLabelList = []
+        # self.canLabelList = []
         self.stateWorkCheck = np.array([]) # 0 = do work, 1 = dont do work
+
+        self.completeness = []
         
 
     def __len__(self):
@@ -62,6 +64,32 @@ class Model:
             
         return len(self.transitionList)
     
+    def computeCompleteness(self):
+
+        rate_limiting_barrier = np.max([ np.max([trans.forwardBarrier, trans.reverseBarrier]) for trans in self.transitionList ])
+        for state in self.stateList:
+            state.completeness(self.params.MDTemperature, to_screen=False, barrier=rate_limiting_barrier)
+            
+    
+    def deleteTransition(self, transition : Transition):
+
+        if transition in self.transitionList:
+            self.transitionList.remove(transition)
+        else:
+            #log
+            return
+
+
+    def deleteState(self, state : State):
+
+        if state in self.stateList:        
+            self.stateList.remove(state)
+            # log()
+        else:
+            # log()
+            return
+
+    
     def loadRedecorations(self):
 
         """
@@ -70,7 +98,7 @@ class Model:
         Populates the `self.redecorations` list with dataframes or `None` if unavailable.
         """
 
-        # TODO: Add logging
+        log(__name__, 'Loading redecorations')
         self.redecorations = []
         for trans in self.transitionList:
             df = trans.loadRedecoration()
@@ -86,10 +114,15 @@ class Model:
         Build a NetworkX graph of the model from the current list of states and transitions.
         """
 
-        edges = [ ( trans.initialState.nonCanLabel, trans.finalState.nonCanLabel ) 
+        # edges = [ ( trans.initialState.nonCanLabel, trans.finalState.nonCanLabel ) 
+        #             for trans in self.transitionList ]
+        
+        # nodes = [ state.nonCanLabel for state in self.stateList ]
+        
+        edges = [ ( trans.initialState.canLabel, trans.finalState.canLabel ) 
                     for trans in self.transitionList ]
         
-        nodes = [ state.nonCanLabel for state in self.stateList ]
+        nodes = [ state.canLabel for state in self.stateList ]
 
         self.graph = buildNetwork(nodes, edges)
 
@@ -109,7 +142,8 @@ class Model:
             Returns np.inf if unreachable.
         """        
 
-        return shortestPath(self.graph, self.initState.nonCanLabel, state.nonCanLabel)
+        # return shortestPath(self.graph, self.initState.nonCanLabel, state.nonCanLabel)
+        return shortestPath(self.graph, self.initState.canLabel, state.canLabel)  
         
     def update(self, workDistribution = [], states = [], transitions = [], connections = []):
 
@@ -183,8 +217,10 @@ class Model:
                     updateStates([transition.initialState, transition.finalState])
 
                 else:
-                    # TODO: - this message isnt appropriate if the defect seperated
-                    log(__name__, 'Previously Seen Transition')
+                    if not self.checkUniqueness(transition):
+                        log(__name__, 'Previously Seen Transition')
+                    else:
+                        log(__name__, 'Transition Skipped: Defect size exceeds model limits')
 
             return foundNew
         
