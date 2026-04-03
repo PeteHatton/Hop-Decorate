@@ -202,7 +202,7 @@ class NEB(ASE):
         self.minimaNodes.append(0)
         
         for i in range(1,len(e)-1):
-            if e[i] < e[i+1] and e[i] < e[i-1]:
+            if e[i] < e[i+1] and e[i] < e[i-1] and e[i] < np.max(e) - self.params.intMinBuffer:
                 self.minimaNodes.append(i)
 
         self.minimaNodes.append(len(e) - 1)
@@ -224,7 +224,6 @@ class NEB(ASE):
 
         if  len(self.saddleNodes) == 0: # or len(self.saddleNodes) != len(self.minimaNodes) - 1:
             self.flag = 1
-        
 ################################################################################
 
 def _exportForDebug(init,fin,neb,index):
@@ -382,12 +381,11 @@ def main(initialState : State, finalState : State, params : InputParams, comm = 
         # NEB object and run
         neb = NEB(params, communicator = comm)
         
-        # Embarrasing Hack. Sometimes ASE NEB goes wrong for some reason (?)
         try:
             neb.run(init, fin,
-                    logNEB = logNEB, 
+                    logNEB = logNEB,
                     verbose = verbose)
-        except:
+        except Exception:
             continue
         
         # incremenet neb counter
@@ -441,9 +439,9 @@ def main(initialState : State, finalState : State, params : InputParams, comm = 
             
             nebsTODO_temp = []
             for i in range(len(neb.minimaNodes) - 1):
-                
-                _init = copy.copy(init)
-                _fin = copy.copy(fin)
+
+                _init = init.copy()
+                _fin = fin.copy()
 
                 _init.pos = neb.imagePositions[ neb.minimaNodes[i] ].get_positions().flatten()
                 _fin.pos = neb.imagePositions[ neb.minimaNodes[i+1] ].get_positions().flatten()
@@ -467,7 +465,7 @@ def main(initialState : State, finalState : State, params : InputParams, comm = 
         lTest = init
         rTest = fin
         
-        dummyState = copy.copy(init)
+        dummyState = init.copy()
         for n,node in reversed(list(enumerate(lNodes))):
 
             # minimize in-place
@@ -481,9 +479,13 @@ def main(initialState : State, finalState : State, params : InputParams, comm = 
             elif maxMoveAtom(rTest, dummyState)[0] < 0.1:
                 continue
             else:
-                newMinimaPos.append(node)
-                requeueFlag = 1
-                break
+                # If the intermediate minina has a 'depth' of less than params.intMinBuffer then dont worry about it...
+                if dummyState.totalEnergy < np.max([neb.pathEnergy]) - params.intMinBuffer:
+                    newMinimaPos.append(node)
+                    requeueFlag = 1
+                    break
+                else:
+                    continue
 
         if len(newMinimaPos): newMinimaPos.reverse()
 
@@ -505,10 +507,14 @@ def main(initialState : State, finalState : State, params : InputParams, comm = 
                 elif maxMoveAtom(lTest, dummyState)[0] < 0.1:
                     continue
                 else:
-                    newMinimaPos.append(node)
-                    lTest.pos = node
-                    requeueFlag = 1
-                    break
+                    # If the intermediate minina has a 'depth' of less than params.intMinBuffer then dont worry about it...
+                    if dummyState.totalEnergy < np.max([neb.pathEnergy]) - params.intMinBuffer:
+                        newMinimaPos.append(node)
+                        lTest.pos = node
+                        requeueFlag = 1
+                        break
+                    else:
+                        continue
 
         newMinimaPos.insert(0,imagePos[0])
         newMinimaPos.append(imagePos[-1])
@@ -519,10 +525,10 @@ def main(initialState : State, finalState : State, params : InputParams, comm = 
             nebsTODO_temp = []
             for i in range(nRequeue):
 
-                _init = copy.copy(init)
-                _fin = copy.copy(fin)
+                _init = init.copy()
+                _fin = fin.copy()
 
-                _init.pos =  newMinimaPos[i]
+                _init.pos = newMinimaPos[i]
                 _fin.pos = newMinimaPos[i+1]
 
                 nebsTODO_temp.append([_init, _fin])
@@ -530,7 +536,7 @@ def main(initialState : State, finalState : State, params : InputParams, comm = 
             # update nebsTODO:
             nebsTODO = nebsTODO_temp + nebsTODO
         
-        if not requeueFlag:
+        if not requeueFlag and np.min([neb.forwardBarrier,neb.reverseBarrier]) > params.minBarrier:
             
             minDistInit = min.main(init, params, verbose = verbose)
             minDistFin = min.main(fin, params, verbose = verbose)
@@ -570,6 +576,9 @@ def main(initialState : State, finalState : State, params : InputParams, comm = 
             connection.transitions.append(transition)
 
             nebsSuccessful += 1
+
+        else:
+            continue
 
     return connection
 
